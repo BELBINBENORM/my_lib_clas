@@ -123,35 +123,35 @@ class EvaluateClassification:
         else:
             print("⚠️ Please provide a list of strings.")
 
-def refresh_score_df(self):
-    """Scans directory for .joblib files and updates self.score_df"""
+    def refresh_score_df(self):
+        """Scans directory for .joblib files and updates self.score_df"""
+        
+        data = []
     
-    data = []
-
-    pattern = re.compile(
-        r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
-    )
-
-    for file in os.listdir(self.model_dir):
-        match = pattern.search(file)
-        if not match:
-            continue
-
-        name, t_acc, v_acc, secs, ram = match.groups()
-        group = self.catalog.get(name, (None, "Unknown"))[1]
-
-        data.append({
-            "Model": name,
-            "Group": group,
-            "Train_Acc": float(t_acc),
-            "Val_Acc": float(v_acc),
-            "Time_Sec": float(secs),
-            "RAM_GB": float(ram),
-            "File": file,
-        })
-
-    df = pd.DataFrame(data).reindex(columns=self.columns)
-    self.score_df = df.sort_values("Val_Acc", ascending=False).reset_index(drop=True)
+        pattern = re.compile(
+            r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
+        )
+    
+        for file in os.listdir(self.model_dir):
+            match = pattern.search(file)
+            if not match:
+                continue
+    
+            name, t_acc, v_acc, secs, ram = match.groups()
+            group = self.catalog.get(name, (None, "Unknown"))[1]
+    
+            data.append({
+                "Model": name,
+                "Group": group,
+                "Train_Acc": float(t_acc),
+                "Val_Acc": float(v_acc),
+                "Time_Sec": float(secs),
+                "RAM_GB": float(ram),
+                "File": file,
+            })
+    
+        df = pd.DataFrame(data).reindex(columns=self.columns)
+        self.score_df = df.sort_values("Val_Acc", ascending=False).reset_index(drop=True)
 
 
     def score(self):
