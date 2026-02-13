@@ -212,7 +212,6 @@ class EvaluateClassification:
             
                 v_p = fitted_model.predict(X_val)
                 v_acc = round(accuracy_score(y_val, v_p), 4)
-                v_f1 = round(f1_score(y_val, v_p, average='weighted'), 4)
             
                 elapsed = round(time.time() - start_time, 1)
             
@@ -224,6 +223,7 @@ class EvaluateClassification:
                 
                 # remove references
                 del fitted_model
+                del t_p, v_p
                 return_dict.clear()            
             
                 new_row = {
