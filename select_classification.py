@@ -129,7 +129,7 @@ class EvaluateClassification:
         data = []
     
         pattern = re.compile(
-            r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
+            r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
         )
     
         for file in os.listdir('.'):
@@ -137,7 +137,7 @@ class EvaluateClassification:
             if not match:
                 continue
     
-            name, t_acc, v_acc, secs, ram = match.groups()
+            name, t_acc, v_acc, v_f1, secs, ram = match.groups()
             group = self.catalog.get(name, (None, "Unknown"))[1]
     
             data.append({
@@ -145,6 +145,7 @@ class EvaluateClassification:
                 "Group": group,
                 "Train_Acc": float(t_acc),
                 "Val_Acc": float(v_acc),
+                "Val_F1": float(v_f1),
                 "Time_Sec": float(secs),
                 "RAM_GB": float(ram),
                 "File": file,
@@ -212,13 +213,14 @@ class EvaluateClassification:
             
                 v_p = fitted_model.predict(X_val)
                 v_acc = round(accuracy_score(y_val, v_p), 4)
+                v_f1 = round(f1_score(y_val, v_p), 4)
             
                 elapsed = round(time.time() - start_time, 1)
             
                 ram_after = psutil.virtual_memory().used / (1024**3)
                 ram_used = round(ram_after - ram_before, 3)
             
-                fname = f"{name}_{t_acc}_{v_acc}_{elapsed}s_{ram_used}gb.joblib"
+                fname = f"{name}_{t_acc}_{v_acc}_{v_f1}_{elapsed}s_{ram_used}gb.joblib"
                 joblib.dump(fitted_model, fname)
                 
                 # remove references
