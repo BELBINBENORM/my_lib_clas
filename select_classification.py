@@ -106,7 +106,7 @@ class EvaluateClassification:
     def methods(self):
         print("set_ignore_list(list)                   : Sets a list of model names to skip")
         print("evaluate(X_train, X_val, y_train, y_val): Runs training loop")
-        print("score()                                 : Returns evaluate score")
+        print("score()                                 : Returns evaluation score")
         print("inspection(model_name_or_file)          : Can Inspect the classification model")
         print("cleanup_models()                        : Delete ALL saved classification models")
         print("zip_models(zip_name)                    : Zip ALL saved classification models")
