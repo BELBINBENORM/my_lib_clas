@@ -244,7 +244,7 @@ class EvaluateClassification:
                     ignore_index=True
                 )
             
-                print(f" ✅ Completed ] ({elapsed}s, {ram_used}GB)")
+                print(f" ✅ Completed ] ({elapsed}s, {ram_used}GB : {ram_after})")
             
             except Exception as e:
                 print(f" ❌ Scoring Error: {str(e)[:20]} ]")
