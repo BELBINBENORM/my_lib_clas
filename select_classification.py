@@ -127,7 +127,8 @@ class EvaluateClassification:
         if not self.score_df.empty:
             # Sort by Validation Accuracy DESCENDING (Higher is better)
             self.score_df = self.score_df.sort_values('Val_Acc', ascending=False).reset_index(drop=True)
-
+        else:
+            self.score_df = pd.DataFrame(columns=self.columns)
     def evaluate(self, X_train, X_val, y_train, y_val):
         """Runs training loop with Active Kill for Time and RAM Guarding."""
         self.refresh_score_df()
