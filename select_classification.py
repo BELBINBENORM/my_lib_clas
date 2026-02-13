@@ -125,6 +125,10 @@ class EvaluateClassification:
         
         df = pd.DataFrame(data).reindex(columns=self.columns)
         self.score_df = df.sort_values("Val_Acc").reset_index(drop=True)
+
+    def score(self):
+        self.refresh_score_df()
+        return self.score_df
         
     def evaluate(self, X_train, X_val, y_train, y_val):
         """Runs training loop with Active Kill for Time and RAM Guarding."""
