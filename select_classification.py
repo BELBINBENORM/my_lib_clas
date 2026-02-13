@@ -199,6 +199,7 @@ class EvaluateClassification:
                 print(f" ❌ Scoring Error: {str(e)[:20]} ]")
             
             finally:
+                self.refresh_score_df()
                 manager.shutdown()
                 gc.collect()
 
