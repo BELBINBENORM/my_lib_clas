@@ -132,7 +132,7 @@ class EvaluateClassification:
             r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
         )
     
-        for file in os.listdir(self.model_dir):
+        for file in os.listdir('.'):
             match = pattern.search(file)
             if not match:
                 continue
