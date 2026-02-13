@@ -98,7 +98,7 @@ class EvaluateClassification:
             'DummyClassifier': (DummyClassifier(strategy='most_frequent'), 'Baseline')
         }
         # Evaluation columns: Metrics shifted to Accuracy and F1
-        self.columns = ['Model', 'Group', 'Train_Acc', 'Val_Acc', 'Val_F1', 'File']
+        self.columns = ["Model","Group","Train_Acc","Val_Acc","Val_F1","Time_Sec","RAM_GB","File",]
         self.score_df = pd.DataFrame(columns=self.columns)
         self.ignore_list = []
         self.methods()
@@ -120,24 +120,36 @@ class EvaluateClassification:
         else:
             print("⚠️ Please provide a list of strings.")
 
-    def refresh_score_df(self):
-        """Scans directory for .joblib files and updates self.score_df"""
-        data = []
-        pattern = r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)\.joblib"
-        
-        for file in os.listdir('.'):
-            match = re.search(pattern, file)
-            if match:
-                name, t_acc, v_acc = match.groups()
-                group = self.catalog.get(name, (None, "Unknown"))[1]
-                data.append({
-                    'Model': name, 'Group': group, 
-                    'Train_Acc': float(t_acc), 'Val_Acc': float(v_acc), 
-                    'File': file
-                })
-        
-        df = pd.DataFrame(data).reindex(columns=self.columns)
-        self.score_df = df.sort_values("Val_Acc").reset_index(drop=True)
+def refresh_score_df(self):
+    """Scans directory for .joblib files and updates self.score_df"""
+    
+    data = []
+
+    pattern = re.compile(
+        r"(.+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)_([0-9\.eE\+\-]+)s_([0-9\.eE\+\-]+)gb\.joblib"
+    )
+
+    for file in os.listdir(self.model_dir):
+        match = pattern.search(file)
+        if not match:
+            continue
+
+        name, t_acc, v_acc, secs, ram = match.groups()
+        group = self.catalog.get(name, (None, "Unknown"))[1]
+
+        data.append({
+            "Model": name,
+            "Group": group,
+            "Train_Acc": float(t_acc),
+            "Val_Acc": float(v_acc),
+            "Time_Sec": float(secs),
+            "RAM_GB": float(ram),
+            "File": file,
+        })
+
+    df = pd.DataFrame(data).reindex(columns=self.columns)
+    self.score_df = df.sort_values("Val_Acc", ascending=False).reset_index(drop=True)
+
 
     def score(self):
         self.refresh_score_df()
@@ -160,9 +172,9 @@ class EvaluateClassification:
                 print(f"⏩ {name:30} [Already Evaluated]")
                 continue
     
-            current_ram = psutil.virtual_memory().used / (1024**3)
-            if current_ram > RAM_LIMIT_GB:
-                print(f"⚠️ {name:30} [Ignored High RAM ] ({current_ram:.1f}GB)")
+            ram_before = psutil.virtual_memory().used / (1024**3)
+            if ram_before > RAM_LIMIT_GB:
+                print(f"⚠️ {name:30} [Ignored High RAM ] ({ram_before:.1f}GB)")
                 continue
     
             start_time = time.time()
@@ -190,31 +202,44 @@ class EvaluateClassification:
     
             # --- SUCCESS: Retrieve and Score ---
             fitted_model = return_dict['model']
+            
             try:
                 t_p = fitted_model.predict(X_train)
                 t_acc = round(accuracy_score(y_train, t_p), 4)
-                
+            
                 v_p = fitted_model.predict(X_val)
                 v_acc = round(accuracy_score(y_val, v_p), 4)
-                # Weighted F1 handles multi-class and imbalanced data better
                 v_f1 = round(f1_score(y_val, v_p, average='weighted'), 4)
-    
-                fname = f"{name}_{t_acc}_{v_acc}.joblib"
-                joblib.dump(fitted_model, fname)
-    
-                new_row = {
-                    "Model": name, "Group": group, 
-                    "Train_Acc": t_acc, "Val_Acc": v_acc, 
-                    "Val_F1": v_f1, "File": fname
-                }
-                self.score_df = pd.concat([self.score_df, pd.DataFrame([new_row])], ignore_index=True)
-                
+            
                 elapsed = round(time.time() - start_time, 1)
-                print(f" ✅ Completed ] ({elapsed}s)")
-    
+            
+                ram_after = psutil.virtual_memory().used / (1024**3)
+                ram_used = round(ram_after - ram_before, 3)
+            
+                fname = f"{name}_{t_acc}_{v_acc}_{elapsed}s_{ram_used}gb.joblib"
+                joblib.dump(fitted_model, fname)
+            
+                new_row = {
+                    "Model": name,
+                    "Group": group,
+                    "Train_Acc": t_acc,
+                    "Val_Acc": v_acc,
+                    "Val_F1": v_f1,
+                    "Time_Sec": elapsed,
+                    "RAM_GB": ram_used,
+                    "File": fname
+                }
+            
+                self.score_df = pd.concat(
+                    [self.score_df, pd.DataFrame([new_row])],
+                    ignore_index=True
+                )
+            
+                print(f" ✅ Completed ] ({elapsed}s, {ram_used}GB)")
+            
             except Exception as e:
                 print(f" ❌ Scoring Error: {str(e)[:20]} ]")
-            
+                
             finally:
                 self.refresh_score_df()
                 manager.shutdown()
