@@ -221,6 +221,10 @@ class EvaluateClassification:
             
                 fname = f"{name}_{t_acc}_{v_acc}_{elapsed}s_{ram_used}gb.joblib"
                 joblib.dump(fitted_model, fname)
+                
+                # remove references
+                del fitted_model
+                return_dict.clear()            
             
                 new_row = {
                     "Model": name,
@@ -244,10 +248,11 @@ class EvaluateClassification:
                 print(f" ❌ Scoring Error: {str(e)[:20]} ]")
                 
             finally:
-                self.refresh_score_df()
                 manager.shutdown()
                 gc.collect()
-
+                
+        self.refresh_score_df()
+        
     def inspection(self, model_name_or_file):
         target = model_name_or_file
         if not target.endswith('.joblib'):
