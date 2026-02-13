@@ -101,6 +101,8 @@ class EvaluateClassification:
         self.columns = ["Model","Group","Train_Acc","Val_Acc","Val_F1","Time_Sec","RAM_GB","File",]
         self.score_df = pd.DataFrame(columns=self.columns)
         self.ignore_list = []
+        self.RAM_LIMIT_GB = 10.0
+        self.TIME_LIMIT_SEC = 15 * 60  # 900 seconds
         self.methods()
 
     def methods(self):
@@ -109,7 +111,8 @@ class EvaluateClassification:
         print("score()                                 : Returns evaluation score")
         print("inspection(model_name_or_file)          : Can Inspect the classification model")
         print("cleanup_models()                        : Delete ALL saved classification models")
-        print("zip_models(zip_name)                    : Zip ALL saved classification models")
+        print("zip_models(zip_name)                    : Zip ALL saved classification models\n")
+        print("Default RAM_LIMIT_GB and TIME_LIMIT_SEC : 10 GB and 900 seconds")
         
         
     def set_ignore_list(self, models_to_ignore):
@@ -160,8 +163,8 @@ def refresh_score_df(self):
         self.refresh_score_df()
         print(f"🚀 Classification Marathon Started. Current Progress: {len(self.score_df)} models found.\n")
         
-        RAM_LIMIT_GB = 10.0
-        TIME_LIMIT_SEC = 15 * 60  # 900 seconds
+        RAM_LIMIT_GB = self.RAM_LIMIT_GB
+        TIME_LIMIT_SEC = self.TIME_LIMIT_SEC
     
         for name, (model, group) in self.catalog.items():
             if name in self.ignore_list:
