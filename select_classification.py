@@ -194,13 +194,13 @@ class EvaluateClassification:
             if p.is_alive():
                 p.terminate() 
                 p.join()
-                print(f"❌ Ignored High Run Time ]")
+                print(f" ❌ Ignored High Run Time ]")
                 manager.shutdown()
                 continue
     
             if not return_dict.get('success', False):
                 err = return_dict.get('error', 'Unknown Error')
-                print(f"❌ Fit Failed: {str(err)[:25]} ]")
+                print(f" ❌ Fit Failed: {str(err)[:25]} ]")
                 manager.shutdown()
                 continue
     
@@ -244,7 +244,7 @@ class EvaluateClassification:
                     ignore_index=True
                 )
             
-                print(f" ✅ Completed ] ({elapsed}s, {ram_used}GB : {ram_after})")
+                print(f" ✅ Completed ] ({elapsed}s, {ram_used}GB )")
             
             except Exception as e:
                 print(f" ❌ Scoring Error: {str(e)[:20]} ]")
